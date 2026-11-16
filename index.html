@@ -125,6 +125,14 @@
 .life-credit{font-size:10px;color:#a9bfba;margin-top:12px}
 @media(max-width:760px){.life-layout{grid-template-columns:1fr}.life-stage{height:360px}.life-info{min-height:0}}
 </style>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
 </head>
 <body><div class="ambient" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="shell">
 <aside class="rail"><div class="brand"><div class="brandmark">✳</div><div>BIOLOGY X<small>FIELD RESEARCH STATION</small></div></div>
@@ -216,8 +224,8 @@ function initMotion(){
 initMotion();
 </script>
 <script type="module">
-import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
-import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js';
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 window.initFlowerModel=()=>{
  if(window.flowerModelInitialized)return;
  const host=document.getElementById('flower3d'); if(!host)return;
@@ -309,8 +317,8 @@ window.initFlowerModel=()=>{
 </script>
 
 <script type="module">
-import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
-import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js';
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 let lifeReady=false;
 window.initLifeExplorer=()=>{
  if(lifeReady)return;const host=document.getElementById('life3d');if(!host)return;lifeReady=true;
