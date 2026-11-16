@@ -54,6 +54,32 @@
 .motion-ready .reveal.is-visible{opacity:1;transform:translateY(0)}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}.ambient{display:none}.motion-ready .reveal{opacity:1;transform:none}}
 
+
+/* Interactive 3D flower anatomy */
+.flower-lab{margin:28px 0 12px;padding:clamp(15px,3vw,25px);background:#172e32;color:#f5f4e9;border-radius:24px;overflow:hidden;box-shadow:0 20px 55px #142b3024}
+.flower-head{display:flex;justify-content:space-between;gap:14px;align-items:start;margin-bottom:17px}.flower-head h3{color:#fff;margin:5px 0;font-size:23px}.flower-head p{color:#bdcfca;font-size:12px;margin:0}.flower-tag{white-space:nowrap;border:1px solid #54706d;border-radius:30px;padding:6px 11px;color:#d6e56e;font-size:10px}
+.flower-workspace{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(220px,.75fr);gap:13px}
+.flower-stage{min-width:0;min-height:440px;position:relative;border-radius:17px;overflow:hidden;background:radial-gradient(ellipse at 50% 42%,#47645b 0,#263f40 48%,#192f34 100%);border:1px solid #45605b}
+#flower3d{position:absolute;inset:0;touch-action:none}#flower3d canvas{display:block;width:100%;height:100%;outline:0}
+.stage-hint{position:absolute;top:11px;right:13px;color:#d7e4d9a8;font-size:10px;pointer-events:none}
+.stage-controls{position:absolute;bottom:12px;left:12px;right:12px;display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+.stage-controls button{border:1px solid #ffffff35;background:#193237d9;color:#f6f4e8;border-radius:9px;padding:7px 11px;font-size:10px;backdrop-filter:blur(8px);transition:.2s}
+.stage-controls button:hover,.stage-controls button.active{background:#d6e56e;color:#1b3034;border-color:#d6e56e}
+.flower-load{position:absolute;inset:0;display:grid;place-items:center;background:#1b3338;color:#d6e56e;font-size:12px;pointer-events:none;transition:opacity .4s}
+.flower-load.done{opacity:0}
+.flower-info{background:#f7f4e9;color:#1b3034;border-radius:17px;padding:18px;display:flex;flex-direction:column;min-height:440px}
+.flower-info-kicker{font-size:9px;letter-spacing:2px;color:#63756e;font-weight:900}
+.flower-selected{font-size:23px;font-weight:900;margin:8px 0 5px;color:#3157d5}
+.flower-info>p{font-size:12px;line-height:2;color:#52615e;margin:0 0 13px}
+.flower-fact{padding:11px;background:#e8eadb;border-right:3px solid #ed7057;border-radius:9px;font-size:10px;line-height:1.9;color:#42544e}
+.flower-parts{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:auto;padding-top:15px}
+.flower-parts button{border:1px solid #d4d7c9;background:#fffdf5;color:#334a48;border-radius:9px;padding:8px 7px;font-size:10px;text-align:right;transition:.2s}
+.flower-parts button:before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--part-color,#8ba);margin-left:6px}
+.flower-parts button.active,.flower-parts button:hover{border-color:#3157d5;background:#e9edff;color:#233d9d}
+.flower-note{color:#b9cbc5;font-size:10px;margin:13px 3px 0}
+@media(max-width:700px){.flower-workspace{grid-template-columns:1fr}.flower-stage{min-height:390px}.flower-info{min-height:0}.flower-parts{margin-top:0}.flower-head h3{font-size:20px}}
+@media(prefers-reduced-motion:reduce){.flower-lab *{transition:none!important}}
+
 </style>
 </head>
 <body><div class="ambient" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="shell">
@@ -83,7 +109,15 @@
 <script>
 const lessons=[
 {title:'گوناگونی جانداران',desc:'چرا جانداران را گروه‌بندی می‌کنیم و معیارهای طبقه‌بندی چیست؟',tag:'طبقه‌بندی',body:`<h3>چرا جانداران را طبقه‌بندی می‌کنیم؟</h3><p>تنوع جانداران بسیار زیاد است. دانشمندان برای شناسایی، مطالعه و مقایسهٔ دقیق‌تر آن‌ها، جانداران را بر اساس ویژگی‌های مشترک در گروه‌هایی قرار می‌دهند. هرچه ویژگی‌های مشترک بیشتر و اختصاصی‌تر باشد، گروه‌بندی دقیق‌تر می‌شود.</p><h3>معیارهای مهم</h3><ul><li>نوع و تعداد یاخته‌ها</li><li>شیوهٔ تغذیه و به‌دست‌آوردن انرژی</li><li>ساختار بدن و ویژگی‌های ظاهری</li><li>شباهت‌های ساختاری و اطلاعات وراثتی در طبقه‌بندی نوین</li></ul><div class="callout">نکتهٔ مفهومی: شباهت ظاهری به‌تنهایی همیشه نشان‌دهندهٔ خویشاوندی نزدیک نیست؛ باید ویژگی‌های بیشتری بررسی شوند.</div><h3>روش مطالعه</h3><p>برای مقایسهٔ دو جاندار، ابتدا ویژگی‌های مشترک و سپس تفاوت‌های آن‌ها را فهرست کن. این روش از حفظ‌کردن نام گروه‌ها مؤثرتر است.</p><h3>فراتر از کتاب</h3><p>در طبقه‌بندی علمی، فرضیه‌های مربوط به خویشاوندی جانداران با شواهد گوناگون، از جمله داده‌های مولکولی، بازبینی می‌شوند.</p>`},
-{title:'دنیای گیاهان',desc:'ساختار گیاهان، تنوع آن‌ها و سازگاری با محیط.',tag:'گیاهان',body:`<h3>ویژگی‌های عمومی گیاهان</h3><p>بیشتر گیاهان چندیاخته‌ای‌اند و با انجام فتوسنتز مواد آلی مورد نیاز خود را می‌سازند. رنگیزهٔ سبز کلروفیل در جذب انرژی نور نقش دارد.</p><h3>گروه‌های مهم گیاهی</h3><ul><li><b>خزه‌ها:</b> آوند واقعی ندارند و برای تولیدمثل به محیط مرطوب وابستگی بیشتری دارند.</li><li><b>سرخس‌ها:</b> آوند دارند، اما دانه تولید نمی‌کنند و با هاگ تکثیر می‌شوند.</li><li><b>گیاهان دانه‌دار:</b> دانه تشکیل می‌دهند و شامل بازدانگان و نهاندانگان‌اند.</li></ul><div class="callout">تفاوت کلیدی: دانه با هاگ یکسان نیست؛ دانه جنین گیاه و ذخیرهٔ غذایی دارد.</div><h3>نهاندانگان</h3><p>در نهاندانگان، دانه درون میوه قرار می‌گیرد. گل اندام تولیدمثلی این گروه است و پس از لقاح، بخش‌هایی از گل در تشکیل میوه و دانه نقش دارند.</p><h3>فراتر از کتاب</h3><p>ویژگی‌هایی مانند ضخامت کوتیکول، شکل برگ و گستردگی ریشه می‌توانند به سازگاری گیاه با شرایط محیطی کمک کنند.</p>`},
+{title:'دنیای گیاهان',desc:'ساختار گیاهان، تنوع آن‌ها و سازگاری با محیط.',tag:'گیاهان',body:`<h3>ویژگی‌های عمومی گیاهان</h3><p>بیشتر گیاهان چندیاخته‌ای‌اند و با انجام فتوسنتز مواد آلی مورد نیاز خود را می‌سازند. رنگیزهٔ سبز کلروفیل در جذب انرژی نور نقش دارد.</p><h3>گروه‌های مهم گیاهی</h3><ul><li><b>خزه‌ها:</b> آوند واقعی ندارند و برای تولیدمثل به محیط مرطوب وابستگی بیشتری دارند.</li><li><b>سرخس‌ها:</b> آوند دارند، اما دانه تولید نمی‌کنند و با هاگ تکثیر می‌شوند.</li><li><b>گیاهان دانه‌دار:</b> دانه تشکیل می‌دهند و شامل بازدانگان و نهاندانگان‌اند.</li></ul><div class="callout">تفاوت کلیدی: دانه با هاگ یکسان نیست؛ دانه جنین گیاه و ذخیرهٔ غذایی دارد.</div><h3>نهاندانگان</h3><p>در نهاندانگان، دانه درون میوه قرار می‌گیرد. گل اندام تولیدمثلی این گروه است و پس از لقاح، بخش‌هایی از گل در تشکیل میوه و دانه نقش دارند.</p><h3>فراتر از کتاب</h3><p>ویژگی‌هایی مانند ضخامت کوتیکول، شکل برگ و گستردگی ریشه می‌توانند به سازگاری گیاه با شرایط محیطی کمک کنند.</p>
+<div class="flower-lab" id="flowerLab">
+ <div class="flower-head"><div><span class="eyebrow">3D BOTANICAL EXPLORER / 01</span><h3>کالبدشکافی تعاملی گل</h3><p>مدل را با انگشت یا ماوس بچرخان، بزرگ‌نمایی کن و روی هر اندام بزن تا توضیحش را ببینی.</p></div><span class="flower-tag">مدل آموزشی</span></div>
+ <div class="flower-workspace">
+  <div class="flower-stage"><div id="flower3d" role="img" aria-label="مدل سه‌بعدی تعاملی اجزای گل"></div><div class="stage-hint">برای چرخاندن: بکش • برای زوم: دو انگشت یا اسکرول</div><div class="stage-controls"><button type="button" data-view="front">روبرو</button><button type="button" data-view="side">کناری</button><button type="button" data-view="top">از بالا</button><button type="button" id="flowerReset">بازنشانی</button><button type="button" id="flowerSpin" aria-pressed="true">توقف چرخش</button></div><div class="flower-load" id="flowerLoad">در حال آماده‌سازی مدل سه‌بعدی…</div></div>
+  <aside class="flower-info"><div class="flower-info-kicker">ANATOMY CARD</div><div class="flower-selected" id="flowerSelected">گل کامل</div><p id="flowerDescription">گل اندام تولیدمثلی نهاندانگان است. در این مدل می‌توان بخش‌های اصلی گل را از چند زاویه بررسی کرد.</p><div class="flower-fact" id="flowerFact">نکته: همهٔ گل‌ها الزاماً همهٔ این اجزا را ندارند؛ شکل و تعداد اجزا در گونه‌های مختلف متفاوت است.</div><div class="flower-parts" id="flowerParts"></div></aside>
+ </div>
+ <p class="flower-note">این مدل سه‌بعدی، شماتیک و آموزشی است؛ اندازه‌ها و تعداد اندام‌ها برای وضوح نمایش ساده‌سازی شده‌اند. در طبیعت ممکن است گل‌ها تفاوت‌های زیادی داشته باشند.</p>
+</div>`},
 {title:'جانوران بی‌مهره',desc:'از اسفنج‌ها تا بندپایان؛ مقایسهٔ طرح‌های بدنی.',tag:'جانوران',body:`<h3>بی‌مهره‌ها چه هستند؟</h3><p>بی‌مهره‌ها جانورانی هستند که ستون مهره ندارند. این عنوان یک گروه بسیار متنوع از جانوران را دربرمی‌گیرد.</p><ul><li><b>اسفنج‌ها:</b> بدن ساده و دارای منافذ؛ آب از بدن آن‌ها عبور می‌کند.</li><li><b>کیسه‌تنان:</b> مانند عروس دریایی؛ دارای سلول‌های گزنده برای شکار و دفاع.</li><li><b>کرم‌ها:</b> بدن نرم و بدون اندام حرکتی بندبند در بسیاری از نمونه‌ها.</li><li><b>نرم‌تنان:</b> مانند حلزون و هشت‌پا؛ بدن نرم و در برخی گونه‌ها دارای صدف.</li><li><b>بندپایان:</b> اسکلت خارجی و پاهای بندبند؛ حشرات، عنکبوتیان و سخت‌پوستان.</li></ul><div class="callout">برای تشخیص گروه‌ها به چند ویژگی هم‌زمان توجه کن: نوع پوشش بدن، تقارن، بندبند بودن و اندام حرکتی.</div><h3>فراتر از کتاب</h3><p>اسکلت خارجی بندپایان رشد را محدود می‌کند؛ به همین دلیل بسیاری از آن‌ها برای بزرگ‌شدن پوست‌اندازی می‌کنند.</p>`},
 {title:'جانوران مهره‌دار',desc:'مقایسهٔ ماهی‌ها، دوزیستان، خزندگان، پرندگان و پستانداران.',tag:'مهره‌داران',body:`<h3>ویژگی مشترک</h3><p>مهره‌داران دارای ستون مهره و اسکلت داخلی‌اند. این گروه شامل ماهی‌ها، دوزیستان، خزندگان، پرندگان و پستانداران است.</p><ul><li><b>ماهی‌ها:</b> زندگی در آب، تنفس عمدتاً با آبشش و حرکت با باله.</li><li><b>دوزیستان:</b> بخشی از چرخهٔ زندگی معمولاً با آب پیوند دارد؛ پوست در تنفس برخی گونه‌ها نقش دارد.</li><li><b>خزندگان:</b> پوست خشک و پوشیده از پولک یا صفحات؛ تنفس با شش.</li><li><b>پرندگان:</b> بدن دارای پر و اندام حرکتی جلویی تغییر‌یافته به بال؛ تخم‌گذار.</li><li><b>پستانداران:</b> دارای مو و غدد شیری؛ بیشتر گونه‌ها زنده‌زا هستند.</li></ul><div class="callout">مقایسهٔ دقیق: محیط زندگی به‌تنهایی برای تعیین گروه کافی نیست؛ ویژگی‌های بدنی و تولیدمثلی هم مهم‌اند.</div><h3>فراتر از کتاب</h3><p>پرواز در پرندگان با چند سازگاری هماهنگ همراه است؛ از جمله شکل بدن، پرها، ماهیچه‌های نیرومند و دستگاه تنفسی کارآمد.</p>`},
 {title:'با هم زیستن',desc:'بوم‌سازگان، روابط میان جانداران و تعادل طبیعت.',tag:'بوم‌شناسی',body:`<h3>بوم‌سازگان چیست؟</h3><p>بوم‌سازگان از جانداران یک ناحیه و عوامل غیرزندهٔ محیط، مانند آب، نور، خاک و دما تشکیل می‌شود که با یکدیگر ارتباط دارند.</p><h3>نقش‌ها در زنجیرهٔ غذایی</h3><ul><li><b>تولیدکنندگان:</b> مانند گیاهان که مواد آلی می‌سازند.</li><li><b>مصرف‌کنندگان:</b> جاندارانی که از جانداران دیگر تغذیه می‌کنند.</li><li><b>تجزیه‌کنندگان:</b> مانند بسیاری از قارچ‌ها و باکتری‌ها که مواد آلی مرده را تجزیه می‌کنند.</li></ul><div class="callout">انرژی در زنجیرهٔ غذایی جریان دارد، اما مواد در طبیعت چرخه می‌شوند.</div><h3>روابط میان جانداران</h3><p>رقابت، شکار و شکارچی، همیاری و همزیستی از نمونه‌های ارتباط میان جانداران‌اند. تغییر در جمعیت یک گونه می‌تواند بر گونه‌های دیگر اثر بگذارد.</p><h3>فراتر از کتاب</h3><p>شبکهٔ غذایی تصویر دقیق‌تری از روابط تغذیه‌ای ارائه می‌دهد؛ زیرا بیشتر جانداران تنها یک منبع غذایی ندارند.</p>`}
@@ -138,4 +172,93 @@ function initMotion(){
  }))).observe(document.getElementById('home'),{childList:true,subtree:true});
 }
 initMotion();
-</script></body></html>
+</script>
+<script type="module">
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
+import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js';
+(()=>{
+ const host=document.getElementById('flower3d'); if(!host)return;
+ const load=document.getElementById('flowerLoad');
+ const scene=new THREE.Scene(); scene.background=new THREE.Color(0x263f40);
+ const camera=new THREE.PerspectiveCamera(36,1,.1,100);camera.position.set(7,5.2,9);
+ const renderer=new THREE.WebGLRenderer({antialias:true,alpha:false});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;host.appendChild(renderer.domElement);
+ const controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.dampingFactor=.06;controls.target.set(0,2.15,0);controls.minDistance=5;controls.maxDistance=17;controls.maxPolarAngle=Math.PI*.88;
+ scene.add(new THREE.HemisphereLight(0xe9f4df,0x30433c,2));
+ const key=new THREE.DirectionalLight(0xfff0d4,3.1);key.position.set(5,8,6);key.castShadow=true;scene.add(key);
+ const fill=new THREE.DirectionalLight(0x9dc8ff,1.5);fill.position.set(-5,4,-4);scene.add(fill);
+ const floor=new THREE.Mesh(new THREE.CircleGeometry(4.8,64),new THREE.MeshStandardMaterial({color:0x294345,roughness:1}));floor.rotation.x=-Math.PI/2;floor.position.y=-.04;floor.receiveShadow=true;scene.add(floor);
+ const flower=new THREE.Group();scene.add(flower);
+ const parts={};
+ const materials={
+  petals:new THREE.MeshStandardMaterial({color:0xe98691,roughness:.52,side:THREE.DoubleSide}),
+  sepals:new THREE.MeshStandardMaterial({color:0x70a56b,roughness:.8,side:THREE.DoubleSide}),
+  stem:new THREE.MeshStandardMaterial({color:0x56865c,roughness:.8}),
+  filament:new THREE.MeshStandardMaterial({color:0xe8c66e,roughness:.55}),
+  anther:new THREE.MeshStandardMaterial({color:0xd99a38,roughness:.55}),
+  pistil:new THREE.MeshStandardMaterial({color:0x9bbd65,roughness:.6}),
+  ovary:new THREE.MeshStandardMaterial({color:0x6f9b62,roughness:.55,transparent:true,opacity:.72}),
+  ovule:new THREE.MeshStandardMaterial({color:0xf5d66e,roughness:.4})
+ };
+ const add=(key,mesh)=>{mesh.castShadow=true;mesh.receiveShadow=true;flower.add(mesh);(parts[key]??=[]).push(mesh);return mesh};
+ const cyl=(r1,r2,h,mat,x,y,z,key)=>{const m=new THREE.Mesh(new THREE.CylinderGeometry(r1,r2,h,18),mat);m.position.set(x,y,z);return add(key,m)};
+ const sphere=(x,y,z,sx,sy,sz,mat,key)=>{const m=new THREE.Mesh(new THREE.SphereGeometry(1,24,16),mat);m.position.set(x,y,z);m.scale.set(sx,sy,sz);return add(key,m)};
+ cyl(.105,.15,2.35,materials.stem,0,1.17,0,'stem');
+ // Two leaves
+ for(const side of [-1,1]){const leaf=sphere(side*.42,1.35,0,.62,.075,.23,materials.stem,'leaf');leaf.rotation.z=side*-.36;leaf.rotation.y=side*.35}
+ // Receptacle and green sepals
+ sphere(0,2.48,0,.34,.2,.34,materials.sepals,'receptacle');
+ for(let i=0;i<5;i++){const a=i*Math.PI*2/5;const p=sphere(Math.cos(a)*.43,2.53,Math.sin(a)*.43,.52,.085,.22,materials.sepals,'sepals');p.rotation.y=-a;p.rotation.z=-.12}
+ // Petal bowl: two staggered rings
+ for(let ring=0;ring<2;ring++)for(let i=0;i<5;i++){const a=(i+(ring*.5))*Math.PI*2/5;const radius=ring?.68:.48;const p=sphere(Math.cos(a)*radius,2.88+ring*.06,Math.sin(a)*radius,.72,.13,.36,materials.petals,'petals');p.rotation.y=-a;p.rotation.z=(ring?-.12:.08)}
+ // Stamens
+ for(let i=0;i<6;i++){const a=i*Math.PI/3,r=.29,x=Math.cos(a)*r,z=Math.sin(a)*r;cyl(.035,.045,.77,materials.filament,x,3.13,z,'filament');sphere(x,3.55,z,.105,.16,.105,materials.anther,'anther')}
+ // Pistil, stigma and style
+ cyl(.07,.09,.9,materials.pistil,0,3.42,0,'style');
+ sphere(0,3.91,0,.17,.12,.17,materials.pistil,'stigma');
+ // Ovary cross-section as translucent body with visible ovules
+ sphere(0,2.72,0,.3,.28,.3,materials.ovary,'ovary');
+ for(let i=0;i<5;i++){const a=i*Math.PI*2/5;sphere(Math.cos(a)*.14,2.7,Math.sin(a)*.14,.07,.09,.07,materials.ovule,'ovules')}
+ // Labels as canvas sprites
+ const labelDefs=[
+  ['petals','گلبرگ‌ها',[-1.28,3.35,.35]],['sepals','کاسبرگ‌ها',[1.18,2.55,.35]],
+  ['anther','بساک',[.85,3.8,.1]],['filament','رشتهٔ پرچم',[1.02,3.15,-.25]],
+  ['stigma','کلاله',[.36,4.18,0]],['style','خامه',[.55,3.55,0]],
+  ['ovary','تخمدان',[-.62,2.55,.2]],['ovules','تخمک‌ها',[-.78,2.18,.1]],
+  ['stem','ساقه',[-.7,.9,.1]],['leaf','برگ',[.9,1.5,0]]
+ ];
+ const labelSprites={};
+ function makeLabel(txt){const c=document.createElement('canvas');c.width=256;c.height=80;const ctx=c.getContext('2d');ctx.fillStyle='rgba(15,38,42,.88)';ctx.beginPath();ctx.roundRect(5,5,246,70,18);ctx.fill();ctx.strokeStyle='#d6e56e';ctx.lineWidth=3;ctx.stroke();ctx.fillStyle='#fffbea';ctx.font='bold 29px Vazirmatn, sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.direction='rtl';ctx.fillText(txt,128,42);const tex=new THREE.CanvasTexture(c);tex.colorSpace=THREE.SRGBColorSpace;const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,depthTest:false}));sp.scale.set(1.18,.37,1);sp.renderOrder=10;return sp}
+ labelDefs.forEach(([key,txt,pos])=>{const sp=makeLabel(txt);sp.position.set(...pos);flower.add(sp);labelSprites[key]=sp});
+ const descriptions={
+  petals:['گلبرگ‌ها','معمولاً رنگی‌اند و می‌توانند با جلب توجه گرده‌افشان‌ها به گرده‌افشانی کمک کنند.','همهٔ گل‌ها گلبرگ‌های بزرگ و رنگی ندارند.'],
+  sepals:['کاسبرگ‌ها','بیرونی‌ترین بخش گل‌اند و معمولاً پیش از شکفتن، از غنچه محافظت می‌کنند.','مجموع کاسبرگ‌ها را کاسهٔ گل می‌نامند.'],
+  anther:['بساک','بخش انتهایی پرچم است و دانه‌های گرده در آن تشکیل می‌شوند.','پرچم اندام تولیدمثلی نر گل به شمار می‌آید.'],
+  filament:['رشتهٔ پرچم','بخش باریک پرچم است که بساک را نگه می‌دارد.','رشته و بساک با هم یک پرچم را می‌سازند.'],
+  stigma:['کلاله','بخش بالایی مادگی است و محل دریافت دانهٔ گرده به شمار می‌آید.','سطح کلاله در بسیاری از گل‌ها برای نگه‌داشتن گرده سازگار شده است.'],
+  style:['خامه','بخشی از مادگی است که کلاله را به تخمدان وصل می‌کند.','لولهٔ گرده پس از جوانه‌زنی می‌تواند از مسیر خامه به سوی تخمک رشد کند.'],
+  ovary:['تخمدان','بخش پایینی مادگی است و تخمک‌ها درون آن قرار دارند. پس از لقاح، تخمدان معمولاً در تشکیل میوه نقش دارد.','در نهاندانگان، تخمکِ لقاح‌یافته معمولاً به دانه تبدیل می‌شود.'],
+  ovules:['تخمک‌ها','ساختارهایی درون تخمدان‌اند که پس از لقاح، هر تخمک می‌تواند به دانه تبدیل شود.','تخمک را با دانه اشتباه نگیر: دانه پس از فرایند لقاح و رشد تشکیل می‌شود.'],
+  stem:['ساقه','گل را به بخش‌های دیگر گیاه متصل می‌کند و در نگهداری و جابه‌جایی مواد نقش دارد.','در محل اتصال گل به ساقه، ممکن است دم‌گل وجود داشته باشد.'],
+  leaf:['برگ','اندام اصلی فتوسنتز در بیشتر گیاهان است و تبادل گازها نیز از راه روزنه‌ها انجام می‌شود.','برگ‌ها در شکل و اندازه با توجه به گونه و محیط تفاوت دارند.'],
+  receptacle:['نهنج','بخشی از انتهای دم‌گل است که اجزای گل روی آن قرار می‌گیرند.','محل اتصال اندام‌های مختلف گل به یکدیگر است.']
+ };
+ const order=['petals','sepals','anther','filament','stigma','style','ovary','ovules','receptacle','stem','leaf'];
+ const partsBox=document.getElementById('flowerParts');
+ const names={petals:'گلبرگ',sepals:'کاسبرگ',anther:'بساک',filament:'رشته',stigma:'کلاله',style:'خامه',ovary:'تخمدان',ovules:'تخمک',receptacle:'نهنج',stem:'ساقه',leaf:'برگ'};
+ order.forEach(k=>{const b=document.createElement('button');b.type='button';b.textContent=names[k];b.style.setProperty('--part-color',k==='petals'?'#e98691':k==='sepals'||k==='stem'||k==='leaf'?'#70a56b':'#d99a38');b.addEventListener('click',()=>select(k));partsBox.appendChild(b)});
+ let selected='petals',spin=true;
+ function select(k){selected=k;document.querySelectorAll('.flower-parts button').forEach((b,i)=>b.classList.toggle('active',order[i]===k));const d=descriptions[k]||['نهنج', 'اجزای گل روی نهنج قرار می‌گیرند.',''];document.getElementById('flowerSelected').textContent=d[0];document.getElementById('flowerDescription').textContent=d[1];document.getElementById('flowerFact').textContent=d[2];Object.entries(parts).forEach(([name,meshes])=>meshes.forEach(m=>{m.material.emissive=new THREE.Color(name===k?'#62552a':'#000000');m.material.emissiveIntensity=name===k?.45:0}));Object.entries(labelSprites).forEach(([name,sp])=>sp.material.opacity=name===k?1:.82)}
+ window.selectFlowerPart=select;
+ select('petals');
+ function resize(){const w=host.clientWidth,h=host.clientHeight;if(!w||!h)return;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix()}
+ new ResizeObserver(resize).observe(host);resize();
+ document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('[data-view]').forEach(x=>x.classList.remove('active'));b.classList.add('active');const v=b.dataset.view;if(v==='front'){camera.position.set(0,3.1,10);controls.target.set(0,2.1,0)}else if(v==='side'){camera.position.set(10,3.5,0);controls.target.set(0,2.1,0)}else{camera.position.set(0,12,.01);controls.target.set(0,2.1,0)}controls.update()}));
+ document.getElementById('flowerReset').addEventListener('click',()=>{camera.position.set(7,5.2,9);controls.target.set(0,2.15,0);controls.update()});
+ const spinBtn=document.getElementById('flowerSpin');spinBtn.addEventListener('click',()=>{spin=!spin;spinBtn.textContent=spin?'توقف چرخش':'شروع چرخش';spinBtn.setAttribute('aria-pressed',String(spin))});
+ const clock=new THREE.Clock();let frame=0;
+ function animate(){frame=requestAnimationFrame(animate);const t=clock.getElapsedTime();if(spin)flower.rotation.y=Math.sin(t*.22)*.22;flower.children.forEach((o,i)=>{if(o.isMesh&&parts.petals?.includes(o))o.rotation.z+=Math.sin(t*1.1+i)*.00035});controls.update();renderer.render(scene,camera)}
+ animate();load.classList.add('done');
+ window.addEventListener('beforeunload',()=>cancelAnimationFrame(frame),{once:true});
+})().catch(err=>{console.error(err);const l=document.getElementById('flowerLoad');if(l){l.textContent='مدل سه‌بعدی بارگذاری نشد؛ اتصال اینترنت را بررسی و صفحه را تازه‌سازی کن.';l.style.pointerEvents='auto'}});
+</script>
+</body></html>
