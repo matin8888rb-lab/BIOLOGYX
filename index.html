@@ -187,7 +187,7 @@ function initMotion(){
   ambient.appendChild(extra);
  }
  if(reduce||!('IntersectionObserver' in window))return;
- document.body.classList.add('motion-ready');
+ // Fail-safe: keep page content visible even if mobile browsers delay IntersectionObserver callbacks.
  const targets='.heroCopy,.heroArt,.stat,.sectionHead,.zone,.researchCard,.tool,.panel';
  const observer=new IntersectionObserver(entries=>entries.forEach(entry=>{
   if(entry.isIntersecting){entry.target.classList.add('is-visible');observer.unobserve(entry.target)}
