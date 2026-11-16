@@ -158,7 +158,7 @@
 <div class="eyebrow">IMMERSIVE 3D BIOLOGY / EXPLORATION HALL</div><h2>موزهٔ سه‌بعدی جهان زنده</h2>
 <p style="color:var(--muted)">در این بخش مستقل می‌توانی ساختارهای زیستی را از همهٔ زاویه‌ها بررسی کنی. مدل را با انگشت بچرخان، بزرگ‌نمایی کن و برای دیدن توضیح هر بخش، روی آن بزن یا نامش را از فهرست انتخاب کن.</p>
 <div class="life-explorer" id="lifeExplorerMount">
-<p class="life-intro">مدل‌ها شماتیک آموزشی‌اند؛ اندازه‌ها و رنگ‌ها برای وضوح نمایش اغراق شده‌اند و تصویر میکروسکوپی واقعی نیستند.</p>
+<p class="life-intro">مدل‌ها بازسازی سه‌بعدی شماتیک‌اند، نه اسکن میکروسکوپی؛ لایه‌ها و اندامک‌ها را جداگانه انتخاب کن و نمای برش‌خورده را برای مشاهدهٔ بخش‌های داخلی به‌کار ببر. ابعاد و رنگ‌ها برای خوانایی آموزشی تنظیم شده‌اند.</p>
 <div class="life-tabs" id="lifeTabs"><button class="active" data-life="bacteria">باکتری</button><button data-life="virus">ویروس</button><button data-life="fungus">قارچ</button><button data-life="protist">آغازی</button><button data-life="animal">یاختهٔ جانوری</button><button data-life="plant">یاختهٔ گیاهی</button></div>
 <div class="life-layout"><div class="life-stage"><div id="life3d"></div><div class="life-hint">لمس و کشیدن: چرخش · دو انگشت: بزرگ‌نمایی</div><div class="life-controls"><button id="lifeReset">نمای آغازین</button><button id="lifeSpin">چرخش خودکار</button><button id="lifeCut">نمای برش‌خورده</button></div></div>
 <aside class="life-info"><div class="kicker" id="lifeType">BACTERIAL CELL</div><h4 id="lifePartTitle">پوشش سلولی</h4><p id="lifePartText">برای شروع، یکی از بخش‌های مدل را از فهرست انتخاب کن.</p><div class="life-parts" id="lifeParts"></div><div class="life-fact" id="lifeFact">نکتهٔ علمی: باکتری‌ها پروکاریوت‌اند؛ هستهٔ غشادار ندارند و DNA آن‌ها در ناحیهٔ نوکلئوئید قرار دارد.</div><div class="life-credit">مدل سه‌بعدی آموزشی · نه تصویر میکروسکوپی واقعی · اجزا با مقیاس نمایشی</div></aside></div>
@@ -316,80 +316,5 @@ window.initFlowerModel=()=>{
 };
 </script>
 
-<script type="module">
-import * as THREE from 'three';
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-let lifeReady=false;
-window.initLifeExplorer=()=>{
- if(lifeReady)return;const host=document.getElementById('life3d');if(!host)return;lifeReady=true;
- const scene=new THREE.Scene();scene.background=new THREE.Color(0x203b45);
- const camera=new THREE.PerspectiveCamera(38,1,.1,100);camera.position.set(7,5,8);
- const renderer=new THREE.WebGLRenderer({antialias:true,alpha:false});renderer.setPixelRatio(Math.min(devicePixelRatio,1.8));renderer.outputColorSpace=THREE.SRGBColorSpace;host.appendChild(renderer.domElement);
- const controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.target.set(0,0,0);controls.minDistance=3.1;controls.maxDistance=18;
- scene.add(new THREE.HemisphereLight(0xe7f3ec,0x26333b,2.1));const key=new THREE.DirectionalLight(0xffedc9,2.7);key.position.set(5,8,6);scene.add(key);const fill=new THREE.DirectionalLight(0x8fc9ff,1.4);fill.position.set(-6,3,-5);scene.add(fill);
- const floor=new THREE.Mesh(new THREE.CircleGeometry(6,64),new THREE.MeshStandardMaterial({color:0x29464d,roughness:1}));floor.rotation.x=-Math.PI/2;floor.position.y=-2.6;scene.add(floor);
- const root=new THREE.Group();scene.add(root);let spin=false,cut=false,activeModel='bacteria',parts={},currentFocus=null;
- const mat=(color,rough=.55,trans=0)=>new THREE.MeshPhysicalMaterial({color,roughness:rough,transparent:trans>0,opacity:1-trans,side:THREE.DoubleSide,metalness:0});
- const add=(name,obj,desc,fact)=>{obj.userData.part=name;obj.traverse?.(x=>{if(x.isMesh)x.userData.part=name});root.add(obj);parts[name]={obj,desc,fact};return obj};
- const sphere=(name,pos,scale,color,desc,fact,seg=32)=>{const o=new THREE.Mesh(new THREE.SphereGeometry(1,seg,24),mat(color));o.position.set(...pos);o.scale.set(...scale);o.castShadow=true;return add(name,o,desc,fact)};
- const tube=(name,points,r,color,desc,fact)=>{const curve=new THREE.CatmullRomCurve3(points.map(p=>new THREE.Vector3(...p)));const o=new THREE.Mesh(new THREE.TubeGeometry(curve,Math.max(30,points.length*8),r,8,false),mat(color));return add(name,o,desc,fact)};
- const shell=(name,geo,color,desc,fact,opacity=0)=>{const o=new THREE.Mesh(geo,mat(color,.4,opacity));o.castShadow=true;return add(name,o,desc,fact)};
- const clear=()=>{while(root.children.length){const o=root.children[0];root.remove(o);o.traverse?.(x=>{x.geometry?.dispose?.();if(x.material){if(Array.isArray(x.material))x.material.forEach(m=>m.dispose());else x.material.dispose()}})}parts={};};
- const configs={
- bacteria:{title:'BACTERIUM / پروکاریوت',fact:'باکتری هستهٔ غشادار و اندامک‌های غشادار معمولِ یوکاریوت‌ها را ندارد. همهٔ باکتری‌ها بیماری‌زا نیستند.',build(){
- sphere('کپسول', [0,0,0],[2.25,.93,.93],0x8fc7b4,'در برخی باکتری‌ها لایه‌ای ژله‌ای بیرونی است که به حفاظت و چسبیدن به سطوح کمک می‌کند.','کپسول در همهٔ باکتری‌ها وجود ندارد.');
- sphere('دیوارهٔ سلولی',[0,0,0],[2.08,.79,.79],0xe5c66c,'دیواره به حفظ شکل یاخته و جلوگیری از ترکیدن آن در شرایط اسمزی کمک می‌کند.','در باکتری‌ها دیواره معمولاً دارای پپتیدوگلیکان است.');
- sphere('غشای پلاسمایی',[0,0,0],[1.93,.68,.68],0x55a8a2,'غشای انتخاب‌پذیر، ورود و خروج مواد را تنظیم می‌کند.','تنفس سلولی در بسیاری از باکتری‌ها به چین‌خوردگی‌ها و غشای پلاسمایی وابسته است.');
- sphere('سیتوپلاسم',[0,0,0],[1.78,.55,.55],0xd9a46c,'مایع درون سلول که بسیاری از واکنش‌های شیمیایی در آن انجام می‌شود.','ریبوزوم‌ها و DNA درون سیتوپلاسم قرار دارند.');
- for(let i=0;i<18;i++){const a=i*2.4; sphere('ریبوزوم‌ها',[Math.cos(a)*1.1,Math.sin(a*1.3)*.27,Math.sin(a)*.35],[.09,.09,.09],0x425f99,'ریبوزوم‌ها محل ساخت پروتئین‌اند.','ریبوزوم با غشا احاطه نشده است.',12)}
- const dna=new THREE.Mesh(new THREE.TorusGeometry(.53,.065,10,100),mat(0x7d3d91));dna.rotation.set(.5,.4,.2);add('ناحیهٔ نوکلئوئید',dna,'DNA اصلی باکتری در ناحیه‌ای از سیتوپلاسم قرار دارد که غشای هسته آن را جدا نمی‌کند.','DNA باکتری معمولاً حلقوی است؛ اما شکل و سازمان ژنوم در گونه‌ها تفاوت دارد.');
- const plasm=new THREE.Mesh(new THREE.TorusGeometry(.19,.035,8,48),mat(0xe45d53));plasm.position.set(.8,.15,.25);add('پلاسمید',plasm,'پلاسمید قطعهٔ کوچک DNA جدا از کروموزوم اصلی است.','برخی پلاسمیدها ژن‌هایی مانند مقاومت آنتی‌بیوتیکی حمل می‌کنند؛ همهٔ باکتری‌ها پلاسمید ندارند.');
- for(let i=0;i<22;i++){const a=i*Math.PI*2/22;const p=[Math.cos(a)*2.05,Math.sin(a*3)*.14,Math.sin(a)*.72];tube('پیلوس‌ها',[p,[p[0]*1.13,p[1]+.1,p[2]*1.2],[p[0]*1.23,p[1]+.22,p[2]*1.28]],.025,0xe8e1b6,'پیلوس‌ها زوائد پروتئینی کوتاه‌اند که در اتصال به سطح یا انتقال DNA در برخی باکتری‌ها نقش دارند.','تاژک و پیلوس یک ساختار نیستند.')}
- const pts=[];for(let i=0;i<=80;i++){const t=i/80;pts.push([2.2+2.3*t,Math.sin(t*9)*.45,Math.cos(t*9)*.35])}tube('تاژک',pts,.055,0x9bc9e5,'تاژک رشته‌ای بلند است که در حرکت بعضی باکتری‌ها نقش دارد.','همهٔ باکتری‌ها تاژک ندارند.');
- }},
- virus:{title:'VIRUS / ذرهٔ ویروسی',fact:'ویروس‌ها ساختار یاخته‌ای ندارند و برای تکثیر به سلول میزبان وابسته‌اند. جایگاه آن‌ها با جانداران سلولی یکسان نیست.',build(){
- const core=shell('مادهٔ ژنتیکی',new THREE.TorusKnotGeometry(.48,.09,120,12),0xf2c45c,'مادهٔ ژنتیکی ویروس DNA یا RNA است؛ نوع آن در ویروس‌های مختلف فرق دارد.','ویروس‌ها معمولاً یکی از این دو نوع اسید نوکلئیک را به‌عنوان ژنوم دارند.');
- const cap=shell('کپسید',new THREE.IcosahedronGeometry(1.1,2),0x4da6a0,'کپسید پوشش پروتئینی اطراف ژنوم است و از آن محافظت می‌کند.','کپسید از زیرواحدهای پروتئینی ساخته می‌شود.');
- const env=shell('پوشش لیپیدی',new THREE.SphereGeometry(1.35,32,24),0x8b9bd4,'در بعضی ویروس‌ها غشای لیپیدی بیرونی وجود دارد که از غشای میزبان به دست می‌آید.','همهٔ ویروس‌ها پوشش لیپیدی ندارند.');
- env.material.opacity=.22;env.material.transparent=true;env.material.depthWrite=false;
- for(let i=0;i<18;i++){const a=i*Math.PI*2/18,phi=Math.acos(1-2*(i+.5)/18),p=new THREE.Vector3(1.35*Math.sin(phi)*Math.cos(a),1.35*Math.cos(phi),1.35*Math.sin(phi)*Math.sin(a));const end=p.clone().multiplyScalar(1.35);const stem=new THREE.Mesh(new THREE.CylinderGeometry(.045,.075,.36,8),mat(0xe7a16a));stem.position.copy(p.clone().multiplyScalar(1.13));stem.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),p.clone().normalize());add('پروتئین‌های سطحی',stem,'برخی ویروس‌ها پروتئین‌های سطحی دارند که به شناسایی و اتصال به سلول میزبان کمک می‌کنند.','شکل و نوع پروتئین‌های سطحی در ویروس‌ها بسیار متنوع است.')}
- }},
- fungus:{title:'FUNGUS / قارچ',fact:'قارچ‌ها یوکاریوت و دگرپرورد هستند؛ مواد غذایی را جذب می‌کنند. دیوارهٔ یاخته‌ای آن‌ها معمولاً کیتینی است.',build(){
- for(let j=0;j<5;j++){const x=(j-2)*.55;const pts=[];for(let i=0;i<=28;i++){const t=i/28;pts.push([x+Math.sin(t*5+j)*.13,-1.8+t*3.1,Math.cos(t*4+j)*.16])}tube('رشتهٔ قارچی (هیف)',pts,.12,0xe2c98d,'هیف رشته‌ای لوله‌ای است که در بسیاری از قارچ‌ها شبکهٔ رشد را می‌سازد.','مجموعهٔ هیف‌ها را میسلیوم می‌نامند.')}
- tube('میسلیوم',[[-1.8,-1.6,0],[-1.2,-1.4,.4],[-.5,-1.7,.2],[.2,-1.3,.5],[1,-1.6,.1],[1.8,-1.4,.4]],.16,0x7eae8d,'میسلیوم شبکه‌ای از هیف‌هاست که سطح جذب قارچ را افزایش می‌دهد.','قارچ‌ها با ترشح آنزیم، مواد را بیرون سلول تجزیه و سپس جذب می‌کنند.');
- sphere('هاگدان',[0,1.8,0],[.5,.7,.5],0xd87e65,'ساختار تولید و آزادسازی هاگ در برخی قارچ‌ها.','همهٔ قارچ‌ها هاگدان یکسان ندارند؛ روش تولیدمثل متنوع است.');
- for(let i=0;i<14;i++){const a=i*2.4;sphere('هاگ‌ها',[Math.cos(a)*(.8+(i%3)*.2),2.4+(i%4)*.22,Math.sin(a)*(.7+(i%2)*.2)],[.09,.09,.09],0xe9d8a5,'هاگ واحدی برای پراکنش و تولیدمثل در بسیاری از قارچ‌هاست.','هاگ قارچ با دانهٔ گیاه یکسان نیست.',12)}
- }},
- protist:{title:'PROTIST / آغازی',fact:'آغازیان گروهی متنوع از یوکاریوت‌ها هستند؛ برخی فتوسنتز می‌کنند و برخی شکارگر یا انگل‌اند.',build(){
- const body=sphere('غشای یاخته',[0,0,0],[1.6,1.05,.9],0x7bb9a2,'غشای یاخته مرز انتخاب‌پذیر یاخته را تشکیل می‌دهد.','این مدل یک آغازی تک‌یاخته‌ای را به‌صورت ساده‌شده نمایش می‌دهد.');
- sphere('هسته',[.2,.1,.1],[.48,.48,.42],0x7654a8,'هسته محل نگهداری بیشتر DNA در یاختهٔ یوکاریوتی است.','هسته با پوشش هسته‌ای از سیتوپلاسم جدا می‌شود.');
- for(let i=0;i<7;i++){const a=i*Math.PI*2/7;sphere('واکوئول غذایی',[Math.cos(a)*.85,Math.sin(a)*.5,.25],[.16,.16,.14],0xe6c16e,'واکوئول‌ها در نگهداری، انتقال یا گوارش مواد نقش دارند.','کارکرد واکوئول‌ها در آغازیان گوناگون است.')}
- for(let j=0;j<5;j++){const a=j*1.25;const p=[Math.cos(a)*1.25,Math.sin(a)*.72,0];tube('پای کاذب',[p,[p[0]*1.2,p[1]*1.25,.08],[p[0]*1.38,p[1]*1.4,.12]],.13,0x7bb9a2,'پای کاذب برآمدگی موقتی سیتوپلاسم است که در حرکت و گرفتن غذا در آمیب نقش دارد.','همهٔ آغازیان پای کاذب ندارند.')}
- }},
- animal:{title:'ANIMAL CELL / یاختهٔ جانوری',fact:'یاختهٔ جانوری یوکاریوت است؛ هسته و اندامک‌های غشادار دارد، اما دیوارهٔ سلولی و کلروپلاست ندارد.',build(){
- sphere('غشای پلاسمایی',[0,0,0],[1.8,1.35,1.1],0x63a8a2,'غشای نازک و انعطاف‌پذیر، مرز یاخته و تنظیم‌کنندهٔ تبادل مواد است.','غشای یاخته از دولایهٔ فسفولیپیدی و پروتئین‌ها ساخته شده است.');
- sphere('سیتوپلاسم',[0,0,0],[1.68,1.23,1],0xd8a16c,'محیط ژله‌مانند داخل یاخته که اندامک‌ها در آن قرار دارند.','بخش زیادی از واکنش‌های سوخت‌وسازی در سیتوپلاسم انجام می‌شود.');
- sphere('هسته',[0,.15,0],[.63,.68,.62],0x7957a6,'هسته دارای پوشش دوغشایی و محل نگهداری بیشتر اطلاعات ژنتیکی است.','هسته منفذهایی برای تبادل مولکول‌ها دارد.');
- for(let i=0;i<7;i++){const a=i*Math.PI*2/7;sphere('میتوکندری',[Math.cos(a)*1.05,Math.sin(a)*.62,.2],[.32,.17,.2],0xd65e4e,'میتوکندری در تنفس یاخته‌ای و آزادسازی انرژی قابل استفاده نقش دارد.','میتوکندری دو غشا دارد و غشای داخلی چین‌خورده است.')}
- for(let i=0;i<10;i++)sphere('ریبوزوم',[Math.sin(i*2.4)*1.25,Math.cos(i*1.7)*.8,.3],[.055,.055,.055],0x384d91,'ریبوزوم محل ساخته‌شدن پروتئین است.','ریبوزوم‌ها در سیتوپلاسم آزاد یا روی شبکهٔ آندوپلاسمی زبر دیده می‌شوند.',10);
- }},
- plant:{title:'PLANT CELL / یاختهٔ گیاهی',fact:'یاختهٔ گیاهی یوکاریوتی است؛ دیوارهٔ سلولزی، واکوئول بزرگ و در یاخته‌های فتوسنتزکننده کلروپلاست دارد.',build(){
- const wall=shell('دیوارهٔ سلولی',new THREE.BoxGeometry(3.8,2.6,2.1),0xd7bd78,'دیوارهٔ سلولی نسبتاً سخت، شکل و استحکام یاخته را حفظ می‌کند.','دیوارهٔ گیاهی عمدتاً از سلولز ساخته شده است.');
- const mem=shell('غشای پلاسمایی',new THREE.BoxGeometry(3.55,2.35,1.9),0x5aa99c,'غشا در سمت داخل دیواره قرار دارد و تبادل انتخابی مواد را تنظیم می‌کند.','دیواره جای غشای پلاسمایی را نمی‌گیرد.');
- const vac=sphere('واکوئول مرکزی',[0,0,0],[1.15,.83,.67],0x78a9d5,'واکوئول بزرگ مرکزی در ذخیرهٔ آب و مواد محلول و حفظ فشار تورژسانس نقش دارد.','در بسیاری از یاخته‌های بالغ گیاهی فضای بزرگی از یاخته را می‌گیرد.');
- sphere('هسته',[1.1,.55,.25],[.42,.43,.38],0x8657a7,'هسته محل نگهداری بیشتر DNA و تنظیم فعالیت‌های یاخته است.','در یاختهٔ گیاهی هسته معمولاً به کناره رانده می‌شود.');
- for(let i=0;i<8;i++){const a=i*Math.PI/4;sphere('کلروپلاست',[Math.cos(a)*1.1,Math.sin(a)*.75,.45],[.32,.18,.15],0x4b9b65,'کلروپلاست محل فتوسنتز در یاخته‌های گیاهی سبزینه‌دار است.','کلروفیل در غشاهای درون کلروپلاست قرار دارد.')}
- }},
- };
- function showPart(name){const p=parts[name];if(!p)return;document.getElementById('lifePartTitle').textContent=name;document.getElementById('lifePartText').textContent=p.desc;document.getElementById('lifeFact').textContent='نکتهٔ علمی: '+p.fact;document.querySelectorAll('#lifeParts button').forEach(b=>b.classList.toggle('active',b.dataset.part===name));}
- function build(type){activeModel=type;clear();const c=configs[type];c.build();document.getElementById('lifeType').textContent=c.title;const list=document.getElementById('lifeParts');list.innerHTML=Object.keys(parts).map((n,i)=>'<button data-part="'+n.replace(/"/g,'&quot;')+'">'+n+'</button>').join('');list.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>showPart(b.dataset.part)));showPart(Object.keys(parts)[0]);camera.position.set(6,4.5,7);controls.target.set(0,0,0);controls.update();document.querySelectorAll('#lifeTabs button').forEach(b=>b.classList.toggle('active',b.dataset.life===type));}
- document.getElementById('lifeTabs').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>build(b.dataset.life)));
- document.getElementById('lifeReset').onclick=()=>{camera.position.set(6,4.5,7);controls.target.set(0,0,0);controls.update()};
- document.getElementById('lifeSpin').onclick=e=>{spin=!spin;e.target.textContent=spin?'توقف چرخش':'چرخش خودکار'};
- document.getElementById('lifeCut').onclick=e=>{cut=!cut;root.traverse(o=>{if(o.isMesh&&o.material){o.material.transparent=cut||o.material.transparent;o.material.opacity=cut?.42:1;o.material.depthWrite=!cut}});e.target.textContent=cut?'بازگشت به نمای کامل':'نمای برش‌خورده'};
- const ray=new THREE.Raycaster(),mouse=new THREE.Vector2();renderer.domElement.addEventListener('pointerdown',e=>{const r=renderer.domElement.getBoundingClientRect();mouse.x=((e.clientX-r.left)/r.width)*2-1;mouse.y=-((e.clientY-r.top)/r.height)*2+1;ray.setFromCamera(mouse,camera);const hit=ray.intersectObjects(root.children,true)[0];if(hit){let o=hit.object;while(o&&!o.userData.part)o=o.parent;if(o?.userData.part)showPart(o.userData.part)}});
- function resize(){const w=host.clientWidth,h=host.clientHeight;if(!w||!h)return;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix()}new ResizeObserver(resize).observe(host);resize();
- const clock=new THREE.Clock();function animate(){requestAnimationFrame(animate);if(spin)root.rotation.y+=.003;controls.update();renderer.render(scene,camera)}animate();build('bacteria');
-};
-</script>
+<script type="module" src="./life-museum.js"></script>
 </body></html>
